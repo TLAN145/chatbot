@@ -18,6 +18,9 @@ This project demonstrates how to build a chatbot using Ollama's LLM (Language Mo
 - ChromaDB
 - OpenAI API Key (for embeddings in ChromaDB)
 
+## Usage
+Interact with the chatbot using the text input box. The chatbot will retain context from previous conversations, providing more relevant responses.
+
 ## Examples
 llama3.2:1b :
 You: Can you help me with programming?
