@@ -1,62 +1,18 @@
 import streamlit as st
-from langchain.llms import Ollama  # Ensure this works in your environment
-import chromadb
-from chromadb.utils import embedding_functions
+from src.chatbot import initialize_chromadb, save_to_chromadb, retrieve_from_chromadb, generate_response
 
 # Initialize global variables
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# Initialize ChromaDB Client and Collection
-def initialize_chromadb():
-    try:
-        client = chromadb.Client()
-        ef = embedding_functions.OpenAIEmbeddingFunction(api_key="your-openai-api-key")  # Replace with your OpenAI API key
-        collection = client.get_or_create_collection(name="chatbot_memory", embedding_function=ef)
-        return collection
-    except Exception as e:
-        st.error(f"Error initializing ChromaDB: {e}")
-        return None
-
-# Save conversation history to ChromaDB
-def save_to_chromadb(collection, user_input, response):
-    try:
-        collection.add(
-            documents=[user_input, response],
-            metadatas=[{"role": "user"}, {"role": "bot"}],
-            ids=[f"user-{len(st.session_state.chat_history)}", f"bot-{len(st.session_state.chat_history)}"]
-        )
-    except Exception as e:
-        st.error(f"Error saving to ChromaDB: {e}")
-
-# Retrieve past context from ChromaDB
-def retrieve_from_chromadb(collection, query):
-    try:
-        results = collection.query(query_texts=[query], n_results=1)
-        if results and results.get('documents'):
-            return results['documents'][0]  # Return the most relevant document
-        return None
-    except Exception as e:
-        st.error(f"Error retrieving context from ChromaDB: {e}")
-        return None
-
-# Function to generate a response
-def generate_response(model_name, prompt):
-    try:
-        llm = Ollama(model=model_name)
-        response = llm(prompt)
-        return response
-    except Exception as e:
-        return f"Error: {e}"
-
-# Main function for Streamlit app
 def main():
     st.title("Ollama Chatbot with ChromaDB Memory")
     
     # Initialize ChromaDB
     collection = initialize_chromadb()
-    if collection is None:
-        st.warning("ChromaDB could not be initialized. Contextual memory is disabled.")
+    if isinstance(collection, str):  # Check if initialization failed
+        st.error(collection)
+        return
 
     # Sidebar for model selection
     st.sidebar.header("Settings")
@@ -79,11 +35,8 @@ def main():
 
     if user_input:
         # Retrieve context from ChromaDB
-        context = retrieve_from_chromadb(collection, user_input) if collection else None
-        if context:
-            prompt = f"Context: {context}\nUser: {user_input}"
-        else:
-            prompt = user_input
+        context = retrieve_from_chromadb(collection, user_input)
+        prompt = f"Context: {context}\nUser: {user_input}" if context else user_input
 
         # Generate and append response
         response = generate_response(model_choice, prompt)
@@ -91,8 +44,7 @@ def main():
         st.session_state.chat_history.append(f"Bot: {response}")
 
         # Save to ChromaDB
-        if collection:
-            save_to_chromadb(collection, user_input, response)
+        save_to_chromadb(collection, user_input, response)
     
     # Display chat history
     st.write("### Chat History")
