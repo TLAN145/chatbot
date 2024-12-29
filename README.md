@@ -19,3 +19,5 @@ This project demonstrates how to build a chatbot using Ollama's LLM (Language Mo
 - OpenAI API Key (for embeddings in ChromaDB)
 
 
+Clone the repository:
+[https://github.com/your-repo/ollama-chatbot.git](https://github.com/TLAN145/chatbot.git)
