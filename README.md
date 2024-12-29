@@ -1,4 +1,4 @@
-# chatbot# Ollama Chatbot with ChromaDB Memory
+## Ollama Chatbot with ChromaDB Memory
 
 This project demonstrates how to build a chatbot using Ollama's LLM (Language Model) and ChromaDB for maintaining contextual memory. The chatbot remembers previous interactions and leverages past conversation data to provide relevant and accurate responses. The app is built using Streamlit for the frontend interface.
 
